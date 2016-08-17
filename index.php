@@ -6,7 +6,7 @@
 <html>
 <head>
 	<title>Sample</title>
-	<link rel="stylesheet" href="css/font-awesome.css">
+	<link rel="stylesheet" href="lib/css/font-awesome.css">
 	<link rel="stylesheet" href="dropLoad.css">
 </head>
 <body>
