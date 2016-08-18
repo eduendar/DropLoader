@@ -2,27 +2,39 @@
  * 
  * @author Emre Duendar
  */
-function DropLoad(dropzone,form){
-	
+function DropLoad(dropzone,options){
+
+	this.defaultOptions = {
+		maxHeight: 100,
+		maxAmount: 2,
+		autoMergeToForm: 'formular'
+	};
+
 	this.dropzone = document.getElementById(dropzone);
 	this.amount = 0;
 
-	this.maxHeight = 100;
-	// debuging
-	this.debug = true;
+	function extend(dft,opt){
+		for (var property in opt) {
+			if (opt.hasOwnProperty(property)) {
+				dft[property] = opt[property];
+			}
+		}
+	}
 
-	var formular = document.getElementById(form);
-	formular.addEventListener('submit',function(){
+	extend(this.defaultOptions,options);
+
+	var form = document.getElementById(this.defaultOptions.autoMergeToForm);
+	form.addEventListener('submit',function(){
 		var that = this;
-		var canvasElements = document.getElementsByClassName("to-input");
+		var canvasElements = document.getElementsByClassName("origin");
 		var i = 0;
 		[].forEach.call(canvasElements, function(div) {
 			
 			var input = document.createElement("input");
 			input.setAttribute("type","hidden");
 			input.value = div.toDataURL();
-			input.name = "image"+i;
-			input.id = "image"+i;
+			input.name = "base64_image"+i;
+			input.id = "base64_image"+i;
 			that.appendChild(input);
 		  i += 1;
 		});		
@@ -41,22 +53,60 @@ DropLoad.prototype.create = function(){
 	}, true);
 
 	this.dropzone.addEventListener("drop", function(e){
-		e.preventDefault(); 
-		that.loadImage(e.dataTransfer.files[0]);
+		e.preventDefault();
+		that.dropzone.className = "dropzone";
+
+		var files = e.dataTransfer.files;
+		if (files.length > 0){
+			for (var i = 0; i < files.length; i++) {
+				var file = files.item(i);
+				that.loadImage(file);
+			}
+
+		}
+
+	}, true);
+
+	this.dropzone.addEventListener("dragend", function (e) {
+		that.dropzone.className = "dropzone";
+	}, true);
+	this.dropzone.addEventListener("dragenter", function (e) {
+		console.log(that.amount);
+		if (that.amount < that.defaultOptions.maxAmount){
+			that.dropzone.className = "dropzone dz-drop-allowed";
+		}else{
+			that.dropzone.className = "dropzone dz-drop-not-allowed";
+		}
+	}, true);
+	this.dropzone.addEventListener("dragleave", function (e) {
+		that.dropzone.className = "dropzone";
 	}, true);
 
 	var addButton = document.createElement('div');
 	addButton.className = 'add-button';
+	addButton.setAttribute('title', 'Zum Auswählen klicken');
 
 	var icon = document.createElement('i');
-	icon.className = 'fa fa fa-plus';
+	icon.className = 'fa fw fa-plus';
 
 	var hiddenInput = document.createElement('input');
 	hiddenInput.setAttribute('type','file');
+	hiddenInput.setAttribute('multiple','multiple');
 	hiddenInput.className = 'hidden-file-input';
 	hiddenInput.addEventListener('change',function(e){
 		// catch file input
-		that.loadImage(e.target.files[0]);
+		var files = e.target.files;
+		if (files.length > 0){
+			for (var i = 0; i < files.length; i++) {
+				var file = files.item(i);
+				that.loadImage(file);
+			}
+
+			var input = e.target;
+			//clear file input
+			input.value = "";
+		}
+
 	});
 
 	addButton.appendChild(icon);
@@ -69,24 +119,24 @@ DropLoad.prototype.create = function(){
 /**
  * 
  */
-DropLoad.prototype.incrAmount = function(){
+DropLoad.prototype.incrementAmount = function(){
 	this.amount += 1;
 }
 /**
  * 
  */
-DropLoad.prototype.decrAmount = function(){
+DropLoad.prototype.decrementAmount = function(){
 	this.amount -= 1;
 }
 /**
  * 
  */
 DropLoad.prototype.addThumbnail = function(element){
-	console.log(this.dropzone);
 	if (this.dropzone.childElementCount == 0){
 		this.dropzone.appendChild(element);
 	}else{
 		this.dropzone.insertBefore(element, this.dropzone.firstChild);
+		this.incrementAmount();
 	}
 	
 }
@@ -108,17 +158,15 @@ DropLoad.prototype.loadImage = function(src){
 }
 
 DropLoad.prototype.render = function(src){
+	var that = this;
 	var div = document.createElement("div");
-	div.className = "div-image";
-	
+	div.className = "div-image no-select";
+	div.setAttribute("data-degrees",0);
 
-	this.dropzone.appendChild(div);
-
+	this.addThumbnail(div);
 	
 	var image1 = this.drawImage(src,false,div); 
 	var image2 = this.drawImage(src,true,div);
-
-	console.log(image1);
 
 	var buttonWrapper = document.createElement("div");
 	buttonWrapper.className = 'button-wrapper';
@@ -131,6 +179,7 @@ DropLoad.prototype.render = function(src){
 	buttonRemove.addEventListener("click", function(e){
 		// delete element
 		e.target.parentElement.parentElement.remove();
+		that.decrementAmount();
 	});
 	buttonWrapper.appendChild(buttonRemove);
 
@@ -139,12 +188,14 @@ DropLoad.prototype.render = function(src){
 	buttonEdit.className = "action-button";
 	buttonEdit.innerHTML = '<i class="fa fw fa-2x fa-rotate-right"></i>';
 	buttonEdit.addEventListener("click", function(e){
-		var canvas1 = e.target.parentElement.nextSibling;
-		var canvas2 = canvas1.nextSibling;
-		var ctx1 = canvas1.getContext("2d");
-		var ctx2 = canvas2.getContext("2d");
-		drawRotated(ctx1,canvas1,image1,false);
-		drawRotated(ctx2,canvas2,image2,true);
+		var canvas_origin = e.target.parentElement.nextSibling;
+		var canvas_thumbnail = canvas_origin.nextSibling;
+		var ctx_origin = canvas_origin.getContext("2d");
+		var ctx_thumbnail = canvas_thumbnail.getContext("2d");
+		var degrees = e.target.parentElement.parentElement.getAttribute('data-degrees');
+		degrees += 90;
+		that.rotate(ctx_origin,canvas_origin,image1,degrees);
+		that.rotate(ctx_thumbnail,canvas_thumbnail,image2,degrees);
 		
 	});
 	buttonWrapper.appendChild(buttonEdit);	
@@ -157,13 +208,13 @@ DropLoad.prototype.drawImage = function(src,thumbnail,ele){
 	var image = new Image();
 	image.onload = function(){
 		if (thumbnail){
-			image.width *= that.maxHeight  / image.height;
-			image.height = that.maxHeight ;
+			image.width *= that.defaultOptions.maxHeight  / image.height;
+			image.height = that.defaultOptions.maxHeight ;
 		}
 		
 		var canvas = document.createElement("canvas");
 		if (!thumbnail){
-			canvas.className = 'hide to-input';
+			canvas.className = 'hide origin';
 			canvas.id = 'test';
 		}
 		ele.appendChild(canvas);
@@ -176,3 +227,18 @@ DropLoad.prototype.drawImage = function(src,thumbnail,ele){
 	image.src = src;
 	return image;
 }
+
+DropLoad.prototype.rotate = function(ctx,canvas,image,degrees){
+	var w = canvas.width;
+	var h = canvas.height;
+	ctx.clearRect(0,0,w,h);
+	ctx.save();
+	ctx.translate(w/2,h/2);
+	ctx.rotate(degrees*Math.PI / 180);
+	ctx.translate(-w/2,-h/2);
+
+	ctx.drawImage(image,0,0,image.width,image.height);
+	ctx.restore();
+
+
+};
