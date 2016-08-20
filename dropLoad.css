@@ -15,6 +15,7 @@ div.dropzone.dz-drop-not-allowed {
 
 .dropzone>*{
 	margin: 10px;
+	font-family: "Abadi MT Condensed Extra Bold";
 }
 .hide{
 	display: none;
@@ -28,7 +29,6 @@ div.dropzone.dz-drop-not-allowed {
 	border: 1px solid #333;
 	background: #333;
 	color: #FFF;
-	border-radius: 14px;
 	position: relative;
 	font-size: 107px;
 	text-align: center;
@@ -53,7 +53,6 @@ div.dropzone.dz-drop-not-allowed {
 .div-image{
 	height: 100px;
     display: inline-block;
-    border-radius: 14px;
     overflow: hidden;
     position: relative;
 	margin-right: 5px;
@@ -98,4 +97,82 @@ div.dropzone.dz-drop-not-allowed {
 	-ms-user-select: none;       /* Internet Explorer/Edge */
 	user-select: none;           /* Non-prefixed version, currently
                                   not supported by any browser */
+}
+
+/* EDITOR */
+
+.dz-overlay {
+	position: fixed;
+	height: 100%;
+	width: 100%;
+	z-index: 1002;
+	background: rgba(0, 0, 0, 0.6);
+	top: 0;
+	left: 0;
+	transition: opacity .25s ease-in-out;
+	-moz-transition: opacity .25s ease-in-out;
+	-webkit-transition: opacity .25s ease-in-out;
+}
+
+.dz-dialog {
+	background: #fbf8f8;
+	width: 600px;
+	height: 500px;
+	z-index: 1003;
+	top: calc(50% - 250px);
+	position: fixed;
+	margin-left: calc(50% - 300px);
+}
+
+.dz-dialog-header {
+	width: 100%;
+	height: 40px;
+	background: darkgrey;
+}
+
+.dz-dialog-body {
+	width: 100%;
+	height: calc(100% - 100px);
+}
+
+.dz-dialog-footer {
+	width: 100%;
+	height: 60px;
+}
+
+.title {
+	width: calc(100% - 50px);
+	display: inline-block;
+	line-height: 40px;
+	padding-left: 10px;
+}
+.close-btn {
+	text-align: center;
+	width: 40px;
+	cursor: pointer;
+}
+.close-btn:hover {
+	transform: scale(1.01);
+}
+
+button.btn {
+	float: right;
+	height: 40px;
+	border: 0;
+	margin: 10px 10px 10px 0;
+	font-size: 13px;
+	width: 130px;
+	cursor: pointer;
+	outline: none;
+}
+
+button.btn.btn-save {
+	background: #a4cea4;
+	
+}
+button.btn.btn-save:hover {
+	background: #689468;
+}
+button.btn.btn-cancel:hover {
+	background: #5d5b5b;
 }

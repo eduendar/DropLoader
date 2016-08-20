@@ -7,7 +7,8 @@ function DropLoad(dropzone,options){
 	this.defaultOptions = {
 		maxHeight: 100,
 		maxAmount: 2,
-		autoMergeToForm: 'formular'
+		autoMergeToForm: 'formular',
+		maxImageSize: 5000000 // 5MB
 	};
 
 	this.dropzone = document.getElementById(dropzone);
@@ -71,7 +72,6 @@ DropLoad.prototype.create = function(){
 		that.dropzone.className = "dropzone";
 	}, true);
 	this.dropzone.addEventListener("dragenter", function (e) {
-		console.log(that.amount);
 		if (that.amount < that.defaultOptions.maxAmount){
 			that.dropzone.className = "dropzone dz-drop-allowed";
 		}else{
@@ -143,9 +143,14 @@ DropLoad.prototype.addThumbnail = function(element){
 
 DropLoad.prototype.loadImage = function(src){
 	var that = this;
+
 	//	Prevent any non-image file type from being read.
 	if(!src.type.match(/image.*/)){
 		console.log("The dropped file is not an image: ", src.type);
+		return;
+	}
+	if(src.size > this.defaultOptions.maxImageSize){
+		console.log("Image to big");
 		return;
 	}
 
@@ -165,7 +170,8 @@ DropLoad.prototype.render = function(src){
 
 	this.addThumbnail(div);
 	
-	var image1 = this.drawImage(src,false,div); 
+	var image1 = this.drawImage(src,false,div);
+	this.origin = image1;
 	var image2 = this.drawImage(src,true,div);
 
 	var buttonWrapper = document.createElement("div");
@@ -188,6 +194,9 @@ DropLoad.prototype.render = function(src){
 	buttonEdit.className = "action-button";
 	buttonEdit.innerHTML = '<i class="fa fw fa-2x fa-rotate-right"></i>';
 	buttonEdit.addEventListener("click", function(e){
+		var editor = new that.openEditor();
+		editor.create();
+		/*
 		var canvas_origin = e.target.parentElement.nextSibling;
 		var canvas_thumbnail = canvas_origin.nextSibling;
 		var ctx_origin = canvas_origin.getContext("2d");
@@ -196,6 +205,7 @@ DropLoad.prototype.render = function(src){
 		degrees += 90;
 		that.rotate(ctx_origin,canvas_origin,image1,degrees);
 		that.rotate(ctx_thumbnail,canvas_thumbnail,image2,degrees);
+		*/
 		
 	});
 	buttonWrapper.appendChild(buttonEdit);	
@@ -241,4 +251,74 @@ DropLoad.prototype.rotate = function(ctx,canvas,image,degrees){
 	ctx.restore();
 
 
+};
+
+DropLoad.prototype.openEditor = function(){
+
+	function _init(overlay,dialog){
+		this.overlay = overlay;
+		this.dialog = dialog;
+	}
+
+	return {
+
+		create: function(){
+			var that = this;
+			var overlay = document.createElement("div");
+			overlay.className = "dz-overlay";
+			document.body.appendChild(overlay);
+
+			document.body.addEventListener("keyUp",function (e) {
+				if (e.which == 9){
+
+				}
+			});
+
+			var dialog = document.createElement("div");
+			dialog.className = 'dz-dialog';
+			document.body.appendChild(dialog);
+
+			/* HEADER */
+			var header = document.createElement("div");
+			header.className = "dz-dialog-header";
+			var title = document.createElement("div");
+			title.className = "title";
+			title.innerText = "Image Editor";
+			header.appendChild(title);
+			var btnClose = document.createElement("i");
+			btnClose.className = "fa fw fa-close close-btn";
+			btnClose.addEventListener("click", function(){
+				that.closeDialog();
+			});
+			header.appendChild(btnClose);
+			dialog.appendChild(header);
+
+			var body = document.createElement("div");
+			body.className = "dz-dialog-body";
+			dialog.appendChild(body);
+
+			/* FOOTER */
+			var footer = document.createElement("div");
+			footer.className = "dz-dialog-footer";
+			dialog.appendChild(footer);
+			var btnCancel = document.createElement("button");
+			btnCancel.className = "btn btn-cancel";
+			btnCancel.innerHTML = "<i class='fa fw fa-close'></i> Abbrechen";
+			footer.appendChild(btnCancel);
+
+			var btnSave = document.createElement("button");
+			var btnSave = document.createElement("button");
+			btnSave.className = "btn btn-save";
+			btnSave.innerHTML = "<i class='fa fw fa-save'></i> Speichern";
+			footer.appendChild(btnSave);
+
+			_init(overlay,dialog);
+		},
+
+		closeDialog: function () {
+			this.overlay.parentNode.removeChild(this.overlay);
+			this.dialog.parentNode.removeChild(this.dialog);
+		}
+
+	}
 };
