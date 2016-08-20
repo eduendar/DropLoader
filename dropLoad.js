@@ -194,18 +194,20 @@ DropLoad.prototype.render = function(src){
 	buttonEdit.className = "action-button";
 	buttonEdit.innerHTML = '<i class="fa fw fa-2x fa-rotate-right"></i>';
 	buttonEdit.addEventListener("click", function(e){
-		var editor = new that.openEditor();
-		editor.create();
-		/*
+		// 
+//		var editor = new that.openEditor();
+//		editor.create(that);
+		
 		var canvas_origin = e.target.parentElement.nextSibling;
 		var canvas_thumbnail = canvas_origin.nextSibling;
 		var ctx_origin = canvas_origin.getContext("2d");
 		var ctx_thumbnail = canvas_thumbnail.getContext("2d");
 		var degrees = e.target.parentElement.parentElement.getAttribute('data-degrees');
-		degrees += 90;
+		degrees = parseInt(degrees)+90;
+		e.target.parentElement.parentElement.setAttribute('data-degrees',degrees);
 		that.rotate(ctx_origin,canvas_origin,image1,degrees);
 		that.rotate(ctx_thumbnail,canvas_thumbnail,image2,degrees);
-		*/
+		
 		
 	});
 	buttonWrapper.appendChild(buttonEdit);	
@@ -233,9 +235,12 @@ DropLoad.prototype.drawImage = function(src,thumbnail,ele){
 		canvas.width = image.width;
 		canvas.height = image.height;
 		ctx.drawImage(image, 0, 0, image.width, image.height);
+
+		that.origin_canvas = canvas;
 	};
 	image.src = src;
 	return image;
+		
 }
 
 DropLoad.prototype.rotate = function(ctx,canvas,image,degrees){
@@ -262,7 +267,7 @@ DropLoad.prototype.openEditor = function(){
 
 	return {
 
-		create: function(){
+		create: function(scope){
 			var that = this;
 			var overlay = document.createElement("div");
 			overlay.className = "dz-overlay";
@@ -297,6 +302,25 @@ DropLoad.prototype.openEditor = function(){
 			body.className = "dz-dialog-body";
 			dialog.appendChild(body);
 
+			var contentWrapper = document.createElement("div");
+			contentWrapper.className = "dz-dialog-content";
+			body.appendChild(contentWrapper);
+			
+			// @todo chunk this to native js createElement
+			var table = '<table class="dz-dialog-crop-frame"><tbody>';
+			table += '<tr><td class="dz-dialog-crop-frame-top" colspan="3"></td></tr>';
+    		table += '<tr><td class="dz-dialog-crop-frame-side"></td><td class="dz-dialog-crop-frame-content"></td><td class="dz-dialog-crop-frame-side"></td></tr>';
+			table += '<tr><td class="dz-dialog-crop-frame-bottom" colspan="3"></td></tr>';
+			table += '</tbody></table>';
+
+			//var cropFrame = document.createElement(table);
+			contentWrapper.innerHTML = table;
+
+
+
+			var image = this.drawImage(scope.origin.src,contentWrapper);
+			
+
 			/* FOOTER */
 			var footer = document.createElement("div");
 			footer.className = "dz-dialog-footer";
@@ -318,6 +342,32 @@ DropLoad.prototype.openEditor = function(){
 		closeDialog: function () {
 			this.overlay.parentNode.removeChild(this.overlay);
 			this.dialog.parentNode.removeChild(this.dialog);
+		},
+
+		drawImage: function(src,ele){
+			var that = this;
+			var image = new Image();
+			image.onload = function(){
+				
+				var canvas = document.createElement("canvas");
+				ele.appendChild(canvas);
+				var ctx = canvas.getContext("2d");
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				canvas.width = image.width;
+				canvas.height = image.height;
+				ctx.drawImage(image, 0, 0, image.width, image.height);
+
+				that.editor_canvas = canvas;
+				canvas.addEventListener('mousedown',function(e){
+					
+
+					e.preventDefault();
+				});
+
+			};
+			image.src = src;
+			return image;
+				
 		}
 
 	}

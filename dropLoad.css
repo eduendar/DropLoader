@@ -176,3 +176,34 @@ button.btn.btn-save:hover {
 button.btn.btn-cancel:hover {
 	background: #5d5b5b;
 }
+
+.dz-dialog-content {
+    overflow: hidden;
+    position: relative;
+    height: 100%;
+}
+
+table.dz-dialog-crop-frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-spacing: 0;
+	pointer-events: none;
+}
+td.dz-dialog-crop-frame-bottom {
+    height: 50px;
+	background: rgba(0, 0, 0, 0.5);
+}
+td.dz-dialog-crop-frame-side {
+    width: 50px;
+    background: rgba(0, 0, 0, 0.5);
+}
+td.dz-dialog-crop-frame-content {
+    border: 2px solid red;
+}
+td.dz-dialog-crop-frame-top {
+    height: 50px;
+	background: rgba(0, 0, 0, 0.5);
+}
