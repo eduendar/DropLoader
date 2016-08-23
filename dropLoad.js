@@ -195,9 +195,10 @@ DropLoad.prototype.render = function(src){
 	buttonEdit.innerHTML = '<i class="fa fw fa-2x fa-rotate-right"></i>';
 	buttonEdit.addEventListener("click", function(e){
 		// 
-//		var editor = new that.openEditor();
-//		editor.create(that);
-		
+		var editor = new that.openEditor();
+		editor.create(that);
+
+/**		
 		var canvas_origin = e.target.parentElement.nextSibling;
 		var canvas_thumbnail = canvas_origin.nextSibling;
 		var ctx_origin = canvas_origin.getContext("2d");
@@ -207,7 +208,7 @@ DropLoad.prototype.render = function(src){
 		e.target.parentElement.parentElement.setAttribute('data-degrees',degrees);
 		that.rotate(ctx_origin,canvas_origin,image1,degrees);
 		that.rotate(ctx_thumbnail,canvas_thumbnail,image2,degrees);
-		
+	**/	
 		
 	});
 	buttonWrapper.appendChild(buttonEdit);	
@@ -307,7 +308,8 @@ DropLoad.prototype.openEditor = function(){
 			body.appendChild(contentWrapper);
 			
 			// @todo chunk this to native js createElement
-			var table = '<table class="dz-dialog-crop-frame"><tbody>';
+
+			var table = '<div class="draggable"></div><table class="dz-dialog-crop-frame" id="cropFrame"><tbody>';
 			table += '<tr><td class="dz-dialog-crop-frame-top" colspan="3"></td></tr>';
     		table += '<tr><td class="dz-dialog-crop-frame-side"></td><td class="dz-dialog-crop-frame-content"></td><td class="dz-dialog-crop-frame-side"></td></tr>';
 			table += '<tr><td class="dz-dialog-crop-frame-bottom" colspan="3"></td></tr>';
@@ -316,10 +318,46 @@ DropLoad.prototype.openEditor = function(){
 			//var cropFrame = document.createElement(table);
 			contentWrapper.innerHTML = table;
 
+				interact('.draggable').draggable({
+						// enable inertial throwing
+						inertia: true,
+						// enable autoScroll
+						autoScroll: true,
+				});		
+			/*
+			var cropFrame = document.getElementById("cropFrame");
+				cropFrame.addEventListener('mousedown',function(e){
+					that.mouse_down = true;
+					e.preventDefault();
+				});
 
+				cropFrame.addEventListener('mouseup',function(e){
+					that.mouse_down = false;
+					e.preventDefault();
+				});
+				
+				cropFrame.addEventListener('mousemove',function(e){
+					e.preventDefault();
+					reu
+					var canvas = this.nextSibling;
+					if (that.mouse_down){	
+						var style = canvas.currentStyle || window.getComputedStyle(canvas);
+						var left = style.left.replace("px","");
+						var top = style.top.replace("px","");
+						
+						var x = e.layerX+(e.layerX-left); 
+						
+						canvas.style.left = x+'px';
+
+						var y = e.layerY+(e.layerY-top); 
+						canvas.style.top = y+'px';					
+					}
+					e.preventDefault();
+				});
+				*/
 
 			var image = this.drawImage(scope.origin.src,contentWrapper);
-			
+	
 
 			/* FOOTER */
 			var footer = document.createElement("div");
@@ -350,19 +388,18 @@ DropLoad.prototype.openEditor = function(){
 			image.onload = function(){
 				
 				var canvas = document.createElement("canvas");
+				canvas.className = "absolute";
 				ele.appendChild(canvas);
 				var ctx = canvas.getContext("2d");
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				canvas.width = image.width;
 				canvas.height = image.height;
 				ctx.drawImage(image, 0, 0, image.width, image.height);
-
+				that.mouse_down = false;
 				that.editor_canvas = canvas;
-				canvas.addEventListener('mousedown',function(e){
-					
 
-					e.preventDefault();
-				});
+
+
 
 			};
 			image.src = src;
